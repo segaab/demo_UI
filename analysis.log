@@ -1,0 +1,20 @@
+2025-01-16 23:26:43,018 - INFO - Initialized ArticleAnalyzer with output directory: analysis_outputs
+2025-01-16 23:26:43,018 - ERROR - Unexpected error in main: [Errno 2] No such file or directory: 'article_exports'
+2025-01-16 23:37:43,405 - INFO - Starting Article Analysis Service
+2025-01-16 23:37:43,405 - INFO - Initialized directories: analysis_outputs, article_exports
+2025-01-16 23:37:43,406 - ERROR - Ollama service check failed: No module named 'requests'
+2025-01-16 23:37:43,406 - ERROR - Ollama service is not available. Please ensure it's running.
+2025-01-16 23:38:09,219 - INFO - Starting Article Analysis Service
+2025-01-16 23:38:09,220 - INFO - Initialized directories: analysis_outputs, article_exports
+2025-01-16 23:38:09,266 - ERROR - No article files found in article_exports
+2025-01-16 23:38:09,266 - INFO - Please run the RSS poller first to generate article files
+2025-01-16 23:47:30,275 - INFO - Starting Article Analysis Service
+2025-01-16 23:47:30,275 - INFO - Initialized directories: analysis_outputs, article_exports
+2025-01-16 23:47:30,321 - INFO - Processing latest articles file: article_exports/articles_20250116_234659.json
+2025-01-16 23:47:30,321 - INFO - Successfully loaded 15 articles from article_exports/articles_20250116_234659.json
+2025-01-16 23:47:30,321 - INFO - Starting article analysis...
+2025-01-16 23:47:30,321 - INFO - Prepared prompt with 15 articles
+2025-01-16 23:48:36,039 - INFO - Successfully received analysis from Ollama
+2025-01-16 23:48:36,039 - INFO - Analysis saved to analysis_outputs/analysis_20250116_234836.json
+2025-01-16 23:48:36,039 - INFO - Analysis complete and saved to analysis_outputs/analysis_20250116_234836.json
+2025-01-16 23:48:36,039 - INFO - Total articles analyzed: 15

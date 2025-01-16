@@ -1,0 +1,231 @@
+{
+  "timestamp": "2025-01-16T23:46:59.243370",
+  "total_articles": 15,
+  "articles": [
+    {
+      "id": "3b6809ff-673a-4de3-b9fc-9c9114c62542",
+      "title": "Bitcoin Surges Past $50,000 as Institutional Interest Grows",
+      "link": "https://example.com/article/0",
+      "description": "Bitcoin has surpassed the $50,000 mark for the first time in 2024, driven by increased institutional adoption and the recent approval of spot Bitcoin ETFs.",
+      "published": "2025-01-16T23:46:59.243211",
+      "categories": [
+        "Cryptocurrency",
+        "Bitcoin",
+        "Markets",
+        "ETF"
+      ],
+      "source": "https://ambcrypto.com/feed/",
+      "timestamp": "2025-01-16T23:46:59.243211"
+    },
+    {
+      "id": "d47737cd-95c5-481b-88b7-540cec73f766",
+      "title": "Ethereum Layer 2 Solutions See Record Growth in TVL",
+      "link": "https://example.com/article/1",
+      "description": "Ethereum L2 scaling solutions have reached a new all-time high in Total Value Locked (TVL), with Arbitrum and Optimism leading the charge.",
+      "published": "2025-01-16T22:46:59.243211",
+      "categories": [
+        "Ethereum",
+        "Layer 2",
+        "DeFi",
+        "Scaling"
+      ],
+      "source": "https://ambcrypto.com/feed/",
+      "timestamp": "2025-01-16T22:46:59.243211"
+    },
+    {
+      "id": "c162f644-1f64-4bda-a530-d09ab51e7e55",
+      "title": "SEC Commissioner Discusses Crypto Regulatory Framework",
+      "link": "https://example.com/article/2",
+      "description": "A SEC Commissioner has outlined potential changes to cryptocurrency regulations, highlighting the need for clearer guidelines in the digital asset space.",
+      "published": "2025-01-16T21:46:59.243211",
+      "categories": [
+        "Regulation",
+        "SEC",
+        "Cryptocurrency",
+        "Policy"
+      ],
+      "source": "https://ambcrypto.com/feed/",
+      "timestamp": "2025-01-16T21:46:59.243211"
+    },
+    {
+      "id": "29f9a540-d59f-43df-920d-fb7292c71d42",
+      "title": "Solana DeFi Ecosystem Experiences Rapid Expansion",
+      "link": "https://example.com/article/3",
+      "description": "The Solana blockchain's DeFi ecosystem has seen significant growth, with new protocols and increased user adoption driving SOL price higher.",
+      "published": "2025-01-16T20:46:59.243211",
+      "categories": [
+        "Solana",
+        "DeFi",
+        "Blockchain",
+        "Trading"
+      ],
+      "source": "https://ambcrypto.com/feed/",
+      "timestamp": "2025-01-16T20:46:59.243211"
+    },
+    {
+      "id": "3780f111-4421-46ef-8d68-e17ccd7403c3",
+      "title": "Major Bank Announces Crypto Custody Services",
+      "link": "https://example.com/article/4",
+      "description": "A leading financial institution has revealed plans to offer cryptocurrency custody services to institutional clients, marking another step in crypto adoption.",
+      "published": "2025-01-16T19:46:59.243211",
+      "categories": [
+        "Banking",
+        "Custody",
+        "Institutional",
+        "Adoption"
+      ],
+      "source": "https://ambcrypto.com/feed/",
+      "timestamp": "2025-01-16T19:46:59.243211"
+    },
+    {
+      "id": "9e6d12c7-3ce8-4c2e-abb2-3bfe38e0ebc6",
+      "title": "Bitcoin Surges Past $50,000 as Institutional Interest Grows",
+      "link": "https://example.com/article/5",
+      "description": "Bitcoin has surpassed the $50,000 mark for the first time in 2024, driven by increased institutional adoption and the recent approval of spot Bitcoin ETFs.",
+      "published": "2025-01-16T18:46:59.243211",
+      "categories": [
+        "Cryptocurrency",
+        "Bitcoin",
+        "Markets",
+        "ETF"
+      ],
+      "source": "https://ambcrypto.com/feed/",
+      "timestamp": "2025-01-16T18:46:59.243211"
+    },
+    {
+      "id": "92f82665-c288-4362-8b01-8ce2bbb66b89",
+      "title": "Ethereum Layer 2 Solutions See Record Growth in TVL",
+      "link": "https://example.com/article/6",
+      "description": "Ethereum L2 scaling solutions have reached a new all-time high in Total Value Locked (TVL), with Arbitrum and Optimism leading the charge.",
+      "published": "2025-01-16T17:46:59.243211",
+      "categories": [
+        "Ethereum",
+        "Layer 2",
+        "DeFi",
+        "Scaling"
+      ],
+      "source": "https://ambcrypto.com/feed/",
+      "timestamp": "2025-01-16T17:46:59.243211"
+    },
+    {
+      "id": "0cbe9e95-1a4c-4a16-b567-044d965a7e57",
+      "title": "SEC Commissioner Discusses Crypto Regulatory Framework",
+      "link": "https://example.com/article/7",
+      "description": "A SEC Commissioner has outlined potential changes to cryptocurrency regulations, highlighting the need for clearer guidelines in the digital asset space.",
+      "published": "2025-01-16T16:46:59.243211",
+      "categories": [
+        "Regulation",
+        "SEC",
+        "Cryptocurrency",
+        "Policy"
+      ],
+      "source": "https://ambcrypto.com/feed/",
+      "timestamp": "2025-01-16T16:46:59.243211"
+    },
+    {
+      "id": "4ef91ebe-bdd7-4bae-9cf8-e605d3ddf23b",
+      "title": "Solana DeFi Ecosystem Experiences Rapid Expansion",
+      "link": "https://example.com/article/8",
+      "description": "The Solana blockchain's DeFi ecosystem has seen significant growth, with new protocols and increased user adoption driving SOL price higher.",
+      "published": "2025-01-16T15:46:59.243211",
+      "categories": [
+        "Solana",
+        "DeFi",
+        "Blockchain",
+        "Trading"
+      ],
+      "source": "https://ambcrypto.com/feed/",
+      "timestamp": "2025-01-16T15:46:59.243211"
+    },
+    {
+      "id": "1c2b8868-9b73-4a85-8e31-90be3a2a1e8d",
+      "title": "Major Bank Announces Crypto Custody Services",
+      "link": "https://example.com/article/9",
+      "description": "A leading financial institution has revealed plans to offer cryptocurrency custody services to institutional clients, marking another step in crypto adoption.",
+      "published": "2025-01-16T14:46:59.243211",
+      "categories": [
+        "Banking",
+        "Custody",
+        "Institutional",
+        "Adoption"
+      ],
+      "source": "https://ambcrypto.com/feed/",
+      "timestamp": "2025-01-16T14:46:59.243211"
+    },
+    {
+      "id": "0c706704-4cdc-4f30-a3ab-93fd97c8bd86",
+      "title": "Bitcoin Surges Past $50,000 as Institutional Interest Grows",
+      "link": "https://example.com/article/10",
+      "description": "Bitcoin has surpassed the $50,000 mark for the first time in 2024, driven by increased institutional adoption and the recent approval of spot Bitcoin ETFs.",
+      "published": "2025-01-16T13:46:59.243211",
+      "categories": [
+        "Cryptocurrency",
+        "Bitcoin",
+        "Markets",
+        "ETF"
+      ],
+      "source": "https://ambcrypto.com/feed/",
+      "timestamp": "2025-01-16T13:46:59.243211"
+    },
+    {
+      "id": "9e9fce66-98ed-420a-851a-5d65a12f4447",
+      "title": "Ethereum Layer 2 Solutions See Record Growth in TVL",
+      "link": "https://example.com/article/11",
+      "description": "Ethereum L2 scaling solutions have reached a new all-time high in Total Value Locked (TVL), with Arbitrum and Optimism leading the charge.",
+      "published": "2025-01-16T12:46:59.243211",
+      "categories": [
+        "Ethereum",
+        "Layer 2",
+        "DeFi",
+        "Scaling"
+      ],
+      "source": "https://ambcrypto.com/feed/",
+      "timestamp": "2025-01-16T12:46:59.243211"
+    },
+    {
+      "id": "ede254bb-2b1a-40cd-bfab-823dbfc785a2",
+      "title": "SEC Commissioner Discusses Crypto Regulatory Framework",
+      "link": "https://example.com/article/12",
+      "description": "A SEC Commissioner has outlined potential changes to cryptocurrency regulations, highlighting the need for clearer guidelines in the digital asset space.",
+      "published": "2025-01-16T11:46:59.243211",
+      "categories": [
+        "Regulation",
+        "SEC",
+        "Cryptocurrency",
+        "Policy"
+      ],
+      "source": "https://ambcrypto.com/feed/",
+      "timestamp": "2025-01-16T11:46:59.243211"
+    },
+    {
+      "id": "8795a559-d2d3-4e2f-ae19-4f00bcabb881",
+      "title": "Solana DeFi Ecosystem Experiences Rapid Expansion",
+      "link": "https://example.com/article/13",
+      "description": "The Solana blockchain's DeFi ecosystem has seen significant growth, with new protocols and increased user adoption driving SOL price higher.",
+      "published": "2025-01-16T10:46:59.243211",
+      "categories": [
+        "Solana",
+        "DeFi",
+        "Blockchain",
+        "Trading"
+      ],
+      "source": "https://ambcrypto.com/feed/",
+      "timestamp": "2025-01-16T10:46:59.243211"
+    },
+    {
+      "id": "22d84cd9-d818-4ad9-b311-4d1396c01845",
+      "title": "Major Bank Announces Crypto Custody Services",
+      "link": "https://example.com/article/14",
+      "description": "A leading financial institution has revealed plans to offer cryptocurrency custody services to institutional clients, marking another step in crypto adoption.",
+      "published": "2025-01-16T09:46:59.243211",
+      "categories": [
+        "Banking",
+        "Custody",
+        "Institutional",
+        "Adoption"
+      ],
+      "source": "https://ambcrypto.com/feed/",
+      "timestamp": "2025-01-16T09:46:59.243211"
+    }
+  ]
+}

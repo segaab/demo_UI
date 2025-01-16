@@ -5,6 +5,7 @@ from datetime import datetime
 import asyncio
 import aiohttp
 from typing import List, Dict, Any
+import sys
 
 # Configure logging
 logging.basicConfig(
@@ -19,22 +20,49 @@ logger = logging.getLogger(__name__)
 
 class ArticleAnalyzer:
     def __init__(self):
-        self.ollama_url = "http://localhost:11434/api/generate"  # Default Ollama API endpoint
-        self.model = "llama2"  # Default model
+        self.ollama_url = "http://localhost:11434/api/generate"
+        self.model = "llama2"
         self.latest_analysis_file = "latest_analysis.json"
         
-        # Create analysis output directory
+        # Create required directories
         self.output_dir = "analysis_outputs"
-        os.makedirs(self.output_dir, exist_ok=True)
-        logger.info(f"Initialized ArticleAnalyzer with output directory: {self.output_dir}")
+        self.article_dir = "article_exports"
+        
+        try:
+            os.makedirs(self.output_dir, exist_ok=True)
+            os.makedirs(self.article_dir, exist_ok=True)
+            logger.info(f"Initialized directories: {self.output_dir}, {self.article_dir}")
+        except Exception as e:
+            logger.error(f"Failed to create directories: {str(e)}")
+            sys.exit(1)
+
+    def check_ollama_availability(self) -> bool:
+        """Check if Ollama service is available"""
+        try:
+            import requests
+            response = requests.get("http://localhost:11434/api/tags")
+            return response.status_code == 200
+        except Exception as e:
+            logger.error(f"Ollama service check failed: {str(e)}")
+            return False
 
     def load_articles(self, filepath: str) -> List[Dict[str, Any]]:
         """Load articles from a JSON file"""
         try:
             with open(filepath, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-                logger.info(f"Successfully loaded {len(data['articles'])} articles from {filepath}")
+                article_count = len(data['articles'])
+                if article_count == 0:
+                    logger.warning("Article file is empty")
+                    return []
+                logger.info(f"Successfully loaded {article_count} articles from {filepath}")
                 return data['articles']
+        except FileNotFoundError:
+            logger.error(f"Article file not found: {filepath}")
+            return []
+        except json.JSONDecodeError:
+            logger.error(f"Invalid JSON format in file: {filepath}")
+            return []
         except Exception as e:
             logger.error(f"Error loading articles from {filepath}: {str(e)}")
             return []
@@ -116,25 +144,31 @@ Format your response in clear sections with headers."""
 async def main():
     analyzer = ArticleAnalyzer()
     
+    # Check Ollama service
+    if not analyzer.check_ollama_availability():
+        logger.error("Ollama service is not available. Please ensure it's running.")
+        return
+    
     # Find the most recent articles file
-    article_dir = "article_exports"
     try:
-        files = [f for f in os.listdir(article_dir) if f.startswith("articles_")]
+        files = [f for f in os.listdir(analyzer.article_dir) if f.startswith("articles_")]
         if not files:
-            logger.error("No article files found")
+            logger.error(f"No article files found in {analyzer.article_dir}")
+            logger.info("Please run the RSS poller first to generate article files")
             return
         
         latest_file = max(files)
-        filepath = os.path.join(article_dir, latest_file)
+        filepath = os.path.join(analyzer.article_dir, latest_file)
         logger.info(f"Processing latest articles file: {filepath}")
         
         # Load and analyze articles
         articles = analyzer.load_articles(filepath)
         if not articles:
-            logger.error("No articles loaded")
+            logger.error("No valid articles loaded, stopping analysis")
             return
         
         # Run analysis
+        logger.info("Starting article analysis...")
         analysis = await analyzer.analyze_articles(articles)
         if "error" in analysis:
             logger.error(f"Analysis failed: {analysis['error']}")
@@ -145,11 +179,20 @@ async def main():
         saved_path = analyzer.save_analysis(analysis, timestamp)
         if saved_path:
             logger.info(f"Analysis complete and saved to {saved_path}")
+            logger.info(f"Total articles analyzed: {analysis['articles_analyzed']}")
         else:
             logger.error("Failed to save analysis")
             
     except Exception as e:
         logger.error(f"Unexpected error in main: {str(e)}")
+        logger.debug("Exception details:", exc_info=True)
 
 if __name__ == "__main__":
-    asyncio.run(main()) 
+    logger.info("Starting Article Analysis Service")
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        logger.info("Analysis service stopped by user")
+    except Exception as e:
+        logger.error(f"Fatal error: {str(e)}")
+        sys.exit(1) 

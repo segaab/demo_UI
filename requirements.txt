@@ -2,4 +2,5 @@ aiohttp==3.9.3
 redis==5.0.1
 feedparser==6.0.10
 asyncio==3.4.3
-logging==0.5.1.2 
+logging==0.5.1.2
+requests==2.31.0 

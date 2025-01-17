@@ -13,13 +13,7 @@ REDIS_DB = int(os.getenv('REDIS_DB', '0'))
 # RSS Feed Configuration
 RSS_FEEDS = [
     'https://ambcrypto.com/feed/',
-    # 'https://cointelegraph.com/rss',
-    # 'https://news.bitcoin.com/feed/',
-    # 'https://cryptonews.com/news/feed/',
-    # 'https://bitcoinmagazine.com/feed',
-    # 'https://decrypt.co/feed',
-    # 'https://blog.coinbase.com/feed',
-    # 'https://newsbtc.com/feed/'
+    # Other feeds commented out for now
 ]
 
 # Polling Configuration
@@ -32,10 +26,7 @@ CLOUDFLARE_POLLING_INTERVAL = 300  # 5 minutes
 
 def is_cloudflare_feed(feed_url: str) -> bool:
     """Check if feed is protected by Cloudflare"""
-    cloudflare_domains = [
-        # 'coinpaprika.com',
-        # Add other Cloudflare-protected domains here
-    ]
+    cloudflare_domains = []  # Empty since ambcrypto isn't Cloudflare protected
     return any(domain in feed_url for domain in cloudflare_domains)
 
 # Configure logging

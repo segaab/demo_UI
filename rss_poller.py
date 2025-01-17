@@ -26,10 +26,11 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Redis Configuration from environment variables
-REDIS_HOST = os.getenv('REDIS_HOST', '0.0.0.0')
-REDIS_PORT = int(os.getenv('REDIS_PORT', '6380'))  # Changed default port to 6380
+REDIS_HOST = os.getenv('REDIS_HOST', '127.0.0.1')
+REDIS_PORT = int(os.getenv('REDIS_PORT', '6379'))
 REDIS_DB = int(os.getenv('REDIS_DB', '0'))
-REDIS_PASSWORD = os.getenv('REDIS_PASSWORD', None)  # Optional password
+REDIS_USERNAME = os.getenv('REDIS_USERNAME', 'default')
+REDIS_PASSWORD = os.getenv('REDIS_PASSWORD', '0000')
 
 RSS_FEEDS = [
     'https://ambcrypto.com/feed/',
@@ -81,6 +82,7 @@ class RSSPoller:
                     host=REDIS_HOST,
                     port=REDIS_PORT,
                     db=REDIS_DB,
+                    username=REDIS_USERNAME,
                     password=REDIS_PASSWORD,
                     decode_responses=True,
                     socket_timeout=5,
@@ -91,7 +93,7 @@ class RSSPoller:
                 logger.info(f"{ICONS['db']} Connected to Redis at {REDIS_HOST}:{REDIS_PORT}")
                 return
             except redis.AuthenticationError:
-                logger.error(f"{ICONS['error']} Redis authentication failed. Please check password.")
+                logger.error(f"{ICONS['error']} Redis authentication failed. Username: {REDIS_USERNAME}")
                 raise
             except redis.ConnectionError as e:
                 retry_count += 1

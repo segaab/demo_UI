@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Start Redis
-redis-server --port 6380 --daemonize yes
+redis-server --port 6381 --daemonize yes
 
 # Wait for Redis to be ready
 sleep 2

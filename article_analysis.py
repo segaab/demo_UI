@@ -74,18 +74,32 @@ class ArticleAnalyzer:
             for article in articles
         ])
         
-        prompt = f"""Use the following articles to answer the questions:
+        prompt = f"""Analyze the following articles and provide three separate sections:
 
 {articles_text}
 
-Please provide:
-1. Analysis (2-5 pages)
-2. Trading Ideas (1 for each market category that is related to the articles)
-3. Tickers to watch (All related tickers, e.g., BTCUSD, ETHUSD, SOLUSD, etc.)
+Please structure your response exactly as follows:
 
-Format your response in clear sections with headers."""
+[ANALYSIS]
+Provide a detailed market analysis (2-5 pages) based on these articles.
 
-        logger.info(f"Prepared prompt with {len(articles)} articles")
+[TRADING_IDEAS]
+List specific trading ideas for each relevant market category mentioned in the articles.
+Format each idea as:
+- Market: [market name]
+- Direction: [Long/Short]
+- Entry: [price level]
+- Target: [price target]
+- Stop: [stop loss]
+- Rationale: [brief explanation]
+
+[TICKERS]
+List all relevant trading pairs and tickers mentioned or implied in the articles.
+Format each as: SYMBOL - Full Name (e.g., BTCUSD - Bitcoin/US Dollar)
+
+Keep each section clearly separated with the exact headers shown above."""
+
+        logger.info(f"Prepared structured prompt with {len(articles)} articles")
         return prompt
 
     async def analyze_articles(self, articles: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -104,10 +118,15 @@ Format your response in clear sections with headers."""
                 ) as response:
                     if response.status == 200:
                         result = await response.json()
-                        logger.info("Successfully received analysis from Ollama")
+                        response_text = result["response"]
+                        
+                        # Parse the structured response
+                        sections = self.parse_analysis_sections(response_text)
+                        
+                        logger.info("Successfully received and parsed analysis from Ollama")
                         return {
                             "timestamp": datetime.now().isoformat(),
-                            "analysis": result["response"],
+                            "sections": sections,
                             "articles_analyzed": len(articles)
                         }
                     else:
@@ -119,6 +138,26 @@ Format your response in clear sections with headers."""
             error_msg = f"Error during analysis: {str(e)}"
             logger.error(error_msg)
             return {"error": error_msg}
+
+    def parse_analysis_sections(self, text: str) -> Dict[str, str]:
+        """Parse the response text into structured sections"""
+        sections = {}
+        current_section = None
+        current_content = []
+
+        for line in text.split('\n'):
+            if line.strip() in ['[ANALYSIS]', '[TRADING_IDEAS]', '[TICKERS]']:
+                if current_section:
+                    sections[current_section] = '\n'.join(current_content).strip()
+                current_section = line.strip()[1:-1].lower()  # Remove brackets and convert to lowercase
+                current_content = []
+            elif current_section:
+                current_content.append(line)
+
+        if current_section:
+            sections[current_section] = '\n'.join(current_content).strip()
+
+        return sections
 
     def save_analysis(self, analysis: Dict[str, Any], timestamp: str) -> str:
         """Save analysis results to file"""

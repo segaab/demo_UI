@@ -1,67 +1,68 @@
-import aioredis
-from loguru import logger
+import redis
 import json
+from loguru import logger
 from typing import Dict, Any, List
 
 class RedisClient:
     def __init__(self):
         self.redis = None
+        self.is_connected = False
 
-    async def connect(self, host: str, port: int, db: int = 0) -> bool:
+    def connect(self, host: str = '127.0.0.1', port: int = 6381, db: int = 0) -> bool:
         """Connect to Redis"""
         try:
-            self.redis = await aioredis.from_url(
-                f"redis://{host}:{port}/{db}",
-                encoding="utf-8",
+            self.redis = redis.Redis(
+                host=host,
+                port=port,
+                db=db,
                 decode_responses=True
             )
-            await self.redis.ping()
+            self.redis.ping()  # Test connection
+            self.is_connected = True
             logger.info(f"Connected to Redis at {host}:{port}")
             return True
         except Exception as e:
             logger.error(f"Redis connection failed: {str(e)}")
             return False
 
-    async def close(self):
-        """Close Redis connection"""
-        if self.redis:
-            await self.redis.close()
-
-    async def save_article(self, key: str, data: Dict[str, Any]):
+    def save_article(self, key: str, data: Dict[str, Any]):
         """Save article data"""
-        await self.redis.set(key, json.dumps(data), ex=86400)  # 24h expiry
+        if not self.is_connected:
+            raise ConnectionError("Redis not connected")
+        self.redis.set(key, json.dumps(data), ex=86400)  # 24h expiry
 
-    async def get_article(self, key: str) -> Dict[str, Any]:
+    def get_article(self, key: str) -> Dict[str, Any]:
         """Get article data"""
-        data = await self.redis.get(key)
+        if not self.is_connected:
+            raise ConnectionError("Redis not connected")
+        data = self.redis.get(key)
         return json.loads(data) if data else None
 
-    async def get_recent_articles(self, limit: int = 15) -> List[Dict[str, Any]]:
-        """Get most recent articles from Redis"""
+    def get_recent_articles(self, limit: int = 15) -> List[Dict[str, Any]]:
+        """Get most recent articles"""
+        if not self.is_connected:
+            raise ConnectionError("Redis not connected")
         try:
-            keys = await self.redis.keys("article:*")
-            if not keys:
-                return []
-            
+            keys = self.redis.keys("article:*")
             articles = []
             for key in keys:
-                data = await self.get_article(key)
+                data = self.get_article(key)
                 if data:
                     articles.append(data)
-            
-            # Sort by timestamp and return limited number
             articles.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
             return articles[:limit]
         except Exception as e:
-            logger.error(f"Error getting recent articles: {str(e)}")
+            logger.error(f"Error getting articles: {str(e)}")
             return []
 
-    async def clear_cache(self):
-        """Clear all articles from Redis"""
+    def clear_cache(self):
+        """Clear all articles"""
+        if not self.is_connected:
+            raise ConnectionError("Redis not connected")
         try:
-            keys = await self.redis.keys("article:*")
+            keys = self.redis.keys("article:*")
             if keys:
-                await self.redis.delete(*keys)
-            logger.info("Redis cache cleared")
+                self.redis.delete(*keys)
+            logger.info("Cache cleared")
         except Exception as e:
             logger.error(f"Error clearing cache: {str(e)}") 

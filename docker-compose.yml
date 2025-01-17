@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"  # API
+      - "6380:6380"  # Redis
+    volumes:
+      - ./article_exports:/app/article_exports
+      - ./analysis_outputs:/app/analysis_outputs
+      - ./logs:/app/logs
+    environment:
+      - ENV=production
+      - REDIS_HOST=127.0.0.1
+      - REDIS_PORT=6380
+      - REDIS_DB=0
+      - POLLING_INTERVAL=120
+      - ARTICLES_BUFFER_SIZE=15 

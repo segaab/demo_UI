@@ -5,7 +5,7 @@ from loguru import logger
 # Load environment variables
 load_dotenv()
 
-# Redis Configuration
+# Redis Configuration (minimal)
 REDIS_HOST = os.getenv('REDIS_HOST', '127.0.0.1')
 REDIS_PORT = int(os.getenv('REDIS_PORT', '6379'))
 REDIS_DB = int(os.getenv('REDIS_DB', '0'))

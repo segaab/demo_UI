@@ -1,7 +1,6 @@
 import asyncio
 import aiohttp
 import feedparser
-import redis
 import uuid
 import json
 from datetime import datetime
@@ -10,6 +9,7 @@ from typing import List, Dict, Any
 import logging
 from dotenv import load_dotenv
 import time
+from article_store import ArticleStore
 
 # Load environment variables
 load_dotenv()
@@ -62,7 +62,7 @@ ICONS = {
 
 class RSSPoller:
     def __init__(self):
-        self.connect_to_redis()
+        self.store = ArticleStore()
         self.article_buffer = []
         self.is_ready = False
         
@@ -71,55 +71,13 @@ class RSSPoller:
         os.makedirs(self.output_dir, exist_ok=True)
         logger.info(f"{ICONS['info']} Initialized output directory: {self.output_dir}")
 
-    def connect_to_redis(self, max_retries=3):
-        """Establish Redis connection with retries"""
-        retry_count = 0
-        while retry_count < max_retries:
-            try:
-                self.redis_client = redis.Redis(
-                    host=REDIS_HOST,
-                    port=REDIS_PORT,
-                    db=REDIS_DB,
-                    decode_responses=True,
-                    socket_timeout=5,
-                    socket_connect_timeout=5
-                )
-                # Test connection
-                self.redis_client.ping()
-                logger.info(f"{ICONS['db']} Connected to Redis at {REDIS_HOST}:{REDIS_PORT}")
-                return
-            except redis.ConnectionError as e:
-                retry_count += 1
-                if retry_count == max_retries:
-                    logger.error(f"{ICONS['error']} Could not connect to Redis after {max_retries} attempts")
-                    raise
-                logger.warning(f"{ICONS['warning']} Redis connection attempt {retry_count} failed, retrying...")
-                time.sleep(2)
-
     def export_articles_to_json(self) -> str:
         """Export current articles to a JSON file"""
         if not self.article_buffer:
             logger.warning(f"{ICONS['warning']} No articles to export")
             return ""
-
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"articles_{timestamp}.json"
-        filepath = os.path.join(self.output_dir, filename)
-
-        export_data = {
-            "timestamp": datetime.now().isoformat(),
-            "total_articles": len(self.article_buffer),
-            "articles": self.article_buffer
-        }
-
-        try:
-            with open(filepath, 'w', encoding='utf-8') as f:
-                json.dump(export_data, f, indent=2, ensure_ascii=False)
-            logger.info(f"{ICONS['save']} Exported {len(self.article_buffer)} articles to {filepath}")
-            return filepath
-        except Exception as e:
-            logger.error(f"{ICONS['error']} Failed to export articles: {str(e)}")
-            return ""
+            
+        return self.store.save_articles(self.article_buffer)
 
     async def fetch_feed(self, session: aiohttp.ClientSession, url: str) -> None:
         """Fetch and process a single RSS feed"""

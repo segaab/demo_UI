@@ -7,7 +7,7 @@ redis-server --port 6381 --daemonize yes
 sleep 2
 
 # Start the RSS poller in the background
-python rss_poller.py &
+python src/rss_poller.py &
 
 # Start the main application
 python src/main.py 

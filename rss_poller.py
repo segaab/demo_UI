@@ -10,7 +10,7 @@ import logging
 from dotenv import load_dotenv
 import time
 from article_store import ArticleStore
-from redis_client import RedisClient
+from src.redis_client import RedisClient
 
 
 # Load environment variables

@@ -10,13 +10,11 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY . .
-
 # Create necessary directories
-RUN mkdir -p logs article_exports analysis_outputs
+RUN mkdir -p logs article_exports analysis_outputs src
 
-# Copy startup script
+# Copy source files
+COPY src/ src/
 COPY start.sh .
 RUN chmod +x start.sh
 

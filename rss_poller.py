@@ -10,6 +10,7 @@ import logging
 from dotenv import load_dotenv
 import time
 from article_store import ArticleStore
+from redis_client import RedisClient
 
 # Load environment variables
 load_dotenv()
@@ -27,18 +28,11 @@ logger = logging.getLogger(__name__)
 
 # Redis Configuration from environment variables
 REDIS_HOST = os.getenv('REDIS_HOST', '127.0.0.1')
-REDIS_PORT = int(os.getenv('REDIS_PORT', '6379'))
+REDIS_PORT = int(os.getenv('REDIS_PORT', '6381'))
 REDIS_DB = int(os.getenv('REDIS_DB', '0'))
 
 RSS_FEEDS = [
     'https://ambcrypto.com/feed/',
-    'https://cointelegraph.com/rss',
-    'https://news.bitcoin.com/feed/',
-    'https://cryptonews.com/news/feed/',
-    'https://bitcoinmagazine.com/feed',
-    'https://decrypt.co/feed',
-    'https://blog.coinbase.com/feed',
-    'https://newsbtc.com/feed/'
 ]
 
 # Polling configuration
@@ -62,22 +56,21 @@ ICONS = {
 
 class RSSPoller:
     def __init__(self):
-        self.store = ArticleStore()
+        self.redis_client = RedisClient()
         self.article_buffer = []
         self.is_ready = False
-        
-        # Create output directory
-        self.output_dir = "article_exports"
-        os.makedirs(self.output_dir, exist_ok=True)
-        logger.info(f"{ICONS['info']} Initialized output directory: {self.output_dir}")
+        self.article_store = ArticleStore()
 
-    def export_articles_to_json(self) -> str:
-        """Export current articles to a JSON file"""
-        if not self.article_buffer:
-            logger.warning(f"{ICONS['warning']} No articles to export")
-            return ""
-            
-        return self.store.save_articles(self.article_buffer)
+    async def setup(self):
+        """Initialize Redis connection"""
+        connected = await self.redis_client.connect(
+            host=REDIS_HOST,
+            port=REDIS_PORT,
+            db=REDIS_DB
+        )
+        if not connected:
+            raise ConnectionError("Failed to connect to Redis")
+        logger.info(f"{ICONS['db']} Connected to Redis")
 
     async def fetch_feed(self, session: aiohttp.ClientSession, url: str) -> None:
         """Fetch and process a single RSS feed"""
@@ -109,17 +102,18 @@ class RSSPoller:
                             }
                             
                             # Store in Redis with 24-hour expiration
-                            self.redis_client.setex(
+                            await self.redis_client.save_article(
                                 f"article:{article_id}",
-                                86400,
-                                json.dumps(article)
+                                article
                             )
                             self.article_buffer.append(article)
                             new_articles += 1
-                            
+
                         if new_articles > 0:
                             logger.info(f"{ICONS['new']} Added {new_articles} articles from {url}")
                             logger.info(f"{ICONS['info']} Buffer size: {len(self.article_buffer)}/{REQUIRED_ARTICLES}")
+                            # Save to file system
+                            self.article_store.save_articles(self.article_buffer)
                         
                         if len(self.article_buffer) >= REQUIRED_ARTICLES and not self.is_ready:
                             self.is_ready = True
@@ -136,40 +130,25 @@ class RSSPoller:
                 await asyncio.sleep(delay)
                 delay *= 2  # Exponential backoff
 
-    async def initialize_buffer(self):
-        """Initial polling until we have enough articles"""
-        logger.info(f"{ICONS['sync']} Initializing article buffer (target: {REQUIRED_ARTICLES} articles)")
-        async with aiohttp.ClientSession() as session:
-            while len(self.article_buffer) < REQUIRED_ARTICLES:
-                tasks = [self.fetch_feed(session, url) for url in RSS_FEEDS]
-                await asyncio.gather(*tasks)
-                if len(self.article_buffer) < REQUIRED_ARTICLES:
-                    await asyncio.sleep(5)
-            logger.info(f"{ICONS['success']} Buffer initialization complete!")
-            self.export_articles_to_json()
-
     async def poll_feeds(self):
         """Main polling loop"""
-        # First, initialize the buffer
-        await self.initialize_buffer()
+        await self.setup()
         
-        # Then continue with regular polling
-        logger.info(f"{ICONS['sync']} Starting regular polling cycle (interval: {POLL_INTERVAL}s)")
         async with aiohttp.ClientSession() as session:
             while True:
                 tasks = [self.fetch_feed(session, url) for url in RSS_FEEDS]
                 await asyncio.gather(*tasks)
-                self.export_articles_to_json()
-                logger.info(f"{ICONS['sync']} Polling cycle complete, waiting {POLL_INTERVAL} seconds...")
+                logger.info(f"{ICONS['sync']} Polling cycle complete")
                 await asyncio.sleep(POLL_INTERVAL)
 
 def main():
-    logger.info(f"{ICONS['info']} Starting RSS Polling Service")
+    """Main entry point"""
+    poller = RSSPoller()
+    
     try:
-        poller = RSSPoller()
         asyncio.run(poller.poll_feeds())
     except KeyboardInterrupt:
-        logger.info(f"{ICONS['info']} Service stopped by user")
+        logger.info(f"{ICONS['info']} RSS Feed polling service stopped")
     except Exception as e:
         logger.error(f"{ICONS['error']} Fatal error: {str(e)}")
         raise

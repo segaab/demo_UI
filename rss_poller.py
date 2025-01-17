@@ -29,8 +29,6 @@ logger = logging.getLogger(__name__)
 REDIS_HOST = os.getenv('REDIS_HOST', '127.0.0.1')
 REDIS_PORT = int(os.getenv('REDIS_PORT', '6379'))
 REDIS_DB = int(os.getenv('REDIS_DB', '0'))
-REDIS_USERNAME = os.getenv('REDIS_USERNAME', 'default')
-REDIS_PASSWORD = os.getenv('REDIS_PASSWORD', '0000')
 
 RSS_FEEDS = [
     'https://ambcrypto.com/feed/',
@@ -82,8 +80,6 @@ class RSSPoller:
                     host=REDIS_HOST,
                     port=REDIS_PORT,
                     db=REDIS_DB,
-                    username=REDIS_USERNAME,
-                    password=REDIS_PASSWORD,
                     decode_responses=True,
                     socket_timeout=5,
                     socket_connect_timeout=5
@@ -92,9 +88,6 @@ class RSSPoller:
                 self.redis_client.ping()
                 logger.info(f"{ICONS['db']} Connected to Redis at {REDIS_HOST}:{REDIS_PORT}")
                 return
-            except redis.AuthenticationError:
-                logger.error(f"{ICONS['error']} Redis authentication failed. Username: {REDIS_USERNAME}")
-                raise
             except redis.ConnectionError as e:
                 retry_count += 1
                 if retry_count == max_retries:

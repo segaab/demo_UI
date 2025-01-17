@@ -1,83 +1,102 @@
-import redis.asyncio as aioredis
+import aioredis
 from loguru import logger
-from config import REDIS_HOST, REDIS_PORT, REDIS_DB
 import json
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
+from datetime import datetime, timedelta
 
 class RedisClient:
     def __init__(self):
+        """Initialize Redis client"""
         self.redis = None
+        self.is_connected = False
 
-    async def setup(self):
-        """Async initialization"""
-        self.redis = await aioredis.Redis(
-            host=REDIS_HOST,
-            port=REDIS_PORT,
-            db=REDIS_DB,
-            decode_responses=True
-        )
-        await self.redis.ping()
-        logger.info(f"Successfully connected to Redis at {REDIS_HOST}:{REDIS_PORT}")
+    async def connect(self, host: str = '127.0.0.1', port: int = 6379, db: int = 0) -> bool:
+        """Establish connection to Redis"""
+        try:
+            self.redis = await aioredis.from_url(
+                f"redis://{host}:{port}/{db}",
+                encoding="utf-8",
+                decode_responses=True
+            )
+            await self.redis.ping()
+            self.is_connected = True
+            logger.success(f"Connected to Redis at {host}:{port}")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to connect to Redis: {str(e)}")
+            self.is_connected = False
+            return False
 
     async def close(self):
         """Close Redis connection"""
         if self.redis:
             await self.redis.close()
+            self.is_connected = False
+            logger.info("Redis connection closed")
 
-    async def is_article_exists(self, article_link: str) -> bool:
-        """Check if article link hash exists in Redis"""
-        try:
-            key = f"article:{article_link}"
-            return bool(await self.redis.exists(key))
-        except Exception as e:
-            logger.error(f"Redis error while checking article: {str(e)}")
+    async def store_article(self, article: Dict[str, Any], expire_seconds: int = 86400) -> bool:
+        """Store article with expiration"""
+        if not self.is_connected:
+            logger.error("Redis not connected")
             return False
 
-    async def save_article(self, article_link: str, article_data: dict = None) -> None:
-        """Save article link and data to Redis"""
         try:
-            key = f"article:{article_link}"
-            if article_data:
-                # Store the full article data
-                await self.redis.set(key, json.dumps(article_data), ex=86400)  # 24 hour expiry
-            else:
-                # Just store the link
-                await self.redis.set(key, "1", ex=86400)
-        except Exception as e:
-            logger.error(f"Redis error while saving article: {str(e)}")
+            article_id = article.get('id')
+            if not article_id:
+                logger.error("Article missing ID")
+                return False
 
-    async def get_recent_articles(self, count: int = 15) -> List[Dict[str, Any]]:
-        """Get recent articles from Redis"""
-        try:
-            # Get all article keys
-            keys = await self.redis.keys("article:*")
-            articles = []
+            # Store article
+            key = f"article:{article_id}"
+            await self.redis.set(key, json.dumps(article), ex=expire_seconds)
             
-            for key in keys:
-                value = await self.redis.get(key)
-                try:
-                    # Try to parse as JSON (for full article data)
-                    article_data = json.loads(value)
-                    articles.append(article_data)
-                except json.JSONDecodeError:
-                    # Skip articles that only have link stored
-                    continue
+            # Add to recent articles set
+            score = datetime.fromisoformat(article['timestamp']).timestamp()
+            await self.redis.zadd('recent_articles', {article_id: score})
             
-            # Sort by timestamp and return most recent
-            articles.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
-            return articles[:count]
-            
+            return True
         except Exception as e:
-            logger.error(f"Redis error while getting recent articles: {str(e)}")
+            logger.error(f"Error storing article: {str(e)}")
+            return False
+
+    async def get_recent_articles(self, limit: int = 15) -> List[Dict[str, Any]]:
+        """Get most recent articles"""
+        if not self.is_connected:
+            logger.error("Redis not connected")
             return []
 
-    async def clear_cache(self):
-        """Clear all articles from Redis"""
         try:
-            # Delete all article keys
-            keys = await self.redis.keys("article:*")
-            if keys:
-                await self.redis.delete(*keys)
-            logger.info("Redis cache cleared successfully")
+            # Get recent article IDs
+            article_ids = await self.redis.zrevrange('recent_articles', 0, limit-1)
+            
+            # Fetch articles
+            articles = []
+            for article_id in article_ids:
+                article_data = await self.redis.get(f"article:{article_id}")
+                if article_data:
+                    articles.append(json.loads(article_data))
+            
+            return articles
         except Exception as e:
-            logger.error(f"Redis error while clearing cache: {str(e)}") 
+            logger.error(f"Error fetching recent articles: {str(e)}")
+            return []
+
+    async def clear_cache(self) -> bool:
+        """Clear all cached articles"""
+        if not self.is_connected:
+            logger.error("Redis not connected")
+            return False
+
+        try:
+            # Clear article data
+            async for key in self.redis.scan_iter("article:*"):
+                await self.redis.delete(key)
+            
+            # Clear recent articles set
+            await self.redis.delete('recent_articles')
+            
+            logger.info("Cache cleared successfully")
+            return True
+        except Exception as e:
+            logger.error(f"Error clearing cache: {str(e)}")
+            return False 

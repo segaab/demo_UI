@@ -18,16 +18,19 @@ from config import (
     LOG_LEVEL,
     ARTICLES_BUFFER_SIZE,
     CLOUDFLARE_POLLING_INTERVAL,
-    is_cloudflare_feed
+    is_cloudflare_feed,
+    REDIS_HOST,
+    REDIS_PORT,
+    REDIS_DB
 )
 from redis_client import RedisClient
 
 class FeedPoller:
     def __init__(self, send_to_clients):
+        self.redis_client = RedisClient()
         self.send_to_clients = send_to_clients
         self.article_buffer = []
         self.is_ready = False
-        self.redis_client = None  # Will be initialized in setup
         
         # Create logs directory
         logs_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs")
@@ -42,17 +45,20 @@ class FeedPoller:
         logger.info("Feed Poller initialized")
 
     async def setup(self):
-        """Async initialization"""
-        self.redis_client = RedisClient()
-        await self.redis_client.setup()
+        """Initialize Redis connection"""
+        connected = await self.redis_client.connect(
+            host=REDIS_HOST,
+            port=REDIS_PORT,
+            db=REDIS_DB
+        )
+        if not connected:
+            raise ConnectionError("Failed to connect to Redis")
         
         # Initialize buffer from Redis
-        if os.getenv('REDIS_CLEAR_ON_START', '').lower() == 'true':
-            logger.info("Clearing Redis cache on startup...")
-            await self.redis_client.clear_cache()
-        else:
-            # Load existing articles from Redis
-            await self.initialize_buffer()
+        self.article_buffer = await self.redis_client.get_recent_articles(
+            limit=ARTICLES_BUFFER_SIZE
+        )
+        self.is_ready = len(self.article_buffer) >= ARTICLES_BUFFER_SIZE
         
         logger.info("Feed Poller setup completed")
 

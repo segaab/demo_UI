@@ -9,6 +9,7 @@ import os
 from typing import List, Dict, Any
 import logging
 from dotenv import load_dotenv
+import time
 
 # Load environment variables
 load_dotenv()
@@ -62,21 +63,7 @@ ICONS = {
 
 class RSSPoller:
     def __init__(self):
-        try:
-            self.redis_client = redis.Redis(
-                host=REDIS_HOST,
-                port=REDIS_PORT,
-                db=REDIS_DB,
-                password=REDIS_PASSWORD,
-                decode_responses=True
-            )
-            # Test Redis connection
-            self.redis_client.ping()
-            logger.info(f"{ICONS['db']} Connected to Redis at {REDIS_HOST}:{REDIS_PORT}")
-        except redis.ConnectionError as e:
-            logger.error(f"{ICONS['error']} Redis connection failed: {str(e)}")
-            raise
-
+        self.connect_to_redis()
         self.article_buffer = []
         self.is_ready = False
         
@@ -84,6 +71,35 @@ class RSSPoller:
         self.output_dir = "article_exports"
         os.makedirs(self.output_dir, exist_ok=True)
         logger.info(f"{ICONS['info']} Initialized output directory: {self.output_dir}")
+
+    def connect_to_redis(self, max_retries=3):
+        """Establish Redis connection with retries"""
+        retry_count = 0
+        while retry_count < max_retries:
+            try:
+                self.redis_client = redis.Redis(
+                    host=REDIS_HOST,
+                    port=REDIS_PORT,
+                    db=REDIS_DB,
+                    password=REDIS_PASSWORD,
+                    decode_responses=True,
+                    socket_timeout=5,
+                    socket_connect_timeout=5
+                )
+                # Test connection
+                self.redis_client.ping()
+                logger.info(f"{ICONS['db']} Connected to Redis at {REDIS_HOST}:{REDIS_PORT}")
+                return
+            except redis.AuthenticationError:
+                logger.error(f"{ICONS['error']} Redis authentication failed. Please check password.")
+                raise
+            except redis.ConnectionError as e:
+                retry_count += 1
+                if retry_count == max_retries:
+                    logger.error(f"{ICONS['error']} Could not connect to Redis after {max_retries} attempts")
+                    raise
+                logger.warning(f"{ICONS['warning']} Redis connection attempt {retry_count} failed, retrying...")
+                time.sleep(2)
 
     def export_articles_to_json(self) -> str:
         """Export current articles to a JSON file"""
